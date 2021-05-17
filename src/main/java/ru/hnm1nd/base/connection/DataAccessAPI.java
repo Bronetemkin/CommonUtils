@@ -24,14 +24,33 @@ public interface DataAccessAPI {
 
     Object getDriver();
 
+    default String makeCustomCondition(String condition) {
+        return "{" + condition + "}";
+    }
+
+    default String makeCustomCondition(String column, ComparisonMark mark, Object value) {
+        String condition = makeCondition(column, mark, value);
+        return makeCustomCondition(condition);
+    }
+
+    default String makeCondition(String column, ComparisonMark mark, Object value) {
+        String conditionValue = "";
+        if (value instanceof String) {
+            conditionValue = "'" + value.toString() + "'";
+        } else {
+            conditionValue = value.toString();
+        }
+        return column + " " + mark.getValue() + " " + conditionValue;
+    }
+
     default String makeParamList(Map<String, Object> map) {
         return map.entrySet().stream().filter(o -> Objects.nonNull(o.getValue()))
                 .map(o -> {
-                    String result = "'" + o.getValue().toString() + "'";
                     if (o.getValue() instanceof String && o.getValue().toString().startsWith("{") && o.getValue().toString().endsWith("}")) {
-                        result = o.getValue().toString().replace("{", "").replace("}", "");
+                        return o.getValue().toString().replace("{", "").replace("}", "");
+                    } else {
+                        return makeCondition(o.getKey(), ComparisonMark.EQUALS, o.getValue());
                     }
-                    return o.getKey() + " = " + result;
                 }).collect(Collectors.joining("and "));
     }
 
@@ -81,4 +100,19 @@ public interface DataAccessAPI {
     default long mapCount(ResultSet rs, int rowNum) throws SQLException {
         return rs.getLong(1);
     }
+
+    public static enum ComparisonMark {
+        EQUALS("="), MORE(">"), LESS("<");
+
+        private String value;
+
+        ComparisonMark(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
 }
