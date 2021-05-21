@@ -65,7 +65,7 @@ public class BaseDBAccessAPI implements DataAccessAPI {
         builder.append("UPDATE ")
                 .append(objectType)
                 .append(" SET ")
-                .append(makeParamList(data))
+                .append(makeParamList0(data))
                 .append(" WHERE ")
                 .append(makeParamList(conditions));
         jdbcTemplate.execute(builder.toString());

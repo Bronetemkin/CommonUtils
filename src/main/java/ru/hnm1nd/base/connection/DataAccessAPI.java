@@ -54,6 +54,17 @@ public interface DataAccessAPI {
                 }).collect(Collectors.joining("and "));
     }
 
+    default String makeParamList0(Map<String, Object> map) {
+        return map.entrySet().stream().filter(o -> Objects.nonNull(o.getValue()))
+                .map(o -> {
+                    if (o.getValue() instanceof String && o.getValue().toString().startsWith("{") && o.getValue().toString().endsWith("}")) {
+                        return o.getValue().toString().replace("{", "").replace("}", "");
+                    } else {
+                        return makeCondition(o.getKey(), ComparisonMark.EQUALS, o.getValue());
+                    }
+                }).collect(Collectors.joining(", "));
+    }
+
     default String makeKeysList(Map<String, Object> keys) {
         return keys.entrySet().stream().filter(o -> Objects.nonNull(o.getValue()))
                 .map(src -> {
