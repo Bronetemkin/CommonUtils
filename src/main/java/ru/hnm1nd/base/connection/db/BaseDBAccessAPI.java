@@ -6,6 +6,7 @@ import ru.hnm1nd.base.utils.EntityMapper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class BaseDBAccessAPI implements DataAccessAPI {
 
@@ -62,10 +63,11 @@ public class BaseDBAccessAPI implements DataAccessAPI {
     @Override
     public int update(String objectType, Map<String, Object> data, Map<String, Object> conditions) {
         StringBuilder builder = new StringBuilder();
+        Map<String, Object> nonCollisionalData = removeCollisionsFromData(data, conditions);
         builder.append("UPDATE ")
                 .append(objectType)
                 .append(" SET ")
-                .append(makeParamList0(data))
+                .append(makeParamList0(nonCollisionalData))
                 .append(" WHERE ")
                 .append(makeParamList(conditions));
         jdbcTemplate.execute(builder.toString());
@@ -98,6 +100,10 @@ public class BaseDBAccessAPI implements DataAccessAPI {
     @Override
     public Object getDriver() {
         return jdbcTemplate;
+    }
+
+    private Map<String, Object> removeCollisionsFromData(Map<String, Object> data, Map<String, Object> conditions) {
+        return data.entrySet().stream().filter(e->!(conditions.containsKey(e.getKey()) && conditions.get(e.getKey()).equals(e.getValue()))).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
 }
