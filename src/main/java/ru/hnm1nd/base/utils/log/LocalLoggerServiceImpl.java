@@ -22,18 +22,27 @@ public class LocalLoggerServiceImpl implements LoggerService {
     private String fileName, pathURI;
     private SimpleDateFormat dateFormat;
     private boolean initFlag = true;
+    private boolean printToConsole = true;
 
     public static final String DEFAULT_LOG_FORMAT_0 = "%1$s [%2$s.%3$s:%4$d]";
     public static final String DEFAULT_LOG_FORMAT = "%1$s: %2$s\n";
 
     public static LoggerService getInstance(String logName) {
         if (!instance.containsKey(logName)) {
-            instance.put(logName, new LocalLoggerServiceImpl(logName));
+            instance.put(logName, new LocalLoggerServiceImpl(logName, true));
         }
         return instance.get(logName);
     }
 
-    public LocalLoggerServiceImpl(String fileName) {
+    public static LoggerService getInstance(String logName, boolean printToConsole) {
+        if (!instance.containsKey(logName)) {
+            instance.put(logName, new LocalLoggerServiceImpl(logName, printToConsole));
+        }
+        return instance.get(logName);
+    }
+
+    public LocalLoggerServiceImpl(String fileName, boolean printToConsole) {
+        this.printToConsole = printToConsole;
         this.fileName = fileName;
         this.pathURI = "./logs";
         this.path = createIfNotExist(pathURI, fileName + ".log");
@@ -54,7 +63,9 @@ public class LocalLoggerServiceImpl implements LoggerService {
                 outMsg = msg.toString();
             }
             String resultMsg = String.format(DEFAULT_LOG_FORMAT, name, outMsg);
-            System.out.println(resultMsg.trim());
+            if (printToConsole) {
+                System.out.println(resultMsg.trim());
+            }
             write(resultMsg);
         } catch (IOException e) {
             e.printStackTrace();
@@ -69,7 +80,9 @@ public class LocalLoggerServiceImpl implements LoggerService {
         className = className.substring(className.lastIndexOf(".") + 1);
         try {
             String resultMsg = String.format(DEFAULT_LOG_FORMAT, String.format(DEFAULT_LOG_FORMAT_0, date, className, callerClass.getMethodName(), callerClass.getLineNumber()) + ": " + name, t.getMessage());
-            System.out.println(resultMsg.trim());
+            if (printToConsole) {
+                System.out.println(resultMsg.trim());
+            }
             resultMsg = String.format(DEFAULT_LOG_FORMAT, String.format(DEFAULT_LOG_FORMAT_0, date, className, callerClass.getMethodName(), callerClass.getLineNumber()) + ": " + name, ExceptionUtils.exceptionAsString(t));
             write(resultMsg);
         } catch (IOException e) {
