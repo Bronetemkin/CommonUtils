@@ -92,7 +92,7 @@ public interface DataAccessAPI {
         Map<String, Object> result = new HashMap<>();
         ResultSetMetaData metaData = rs.getMetaData();
         for (int i = 1; i <= metaData.getColumnCount(); i++) {
-            String columnName = metaData.getColumnName(i);
+            String columnName = metaData.getColumnName(i).toUpperCase();
             result.put(columnName, rs.getObject(columnName));
         }
         return result;
@@ -102,7 +102,7 @@ public interface DataAccessAPI {
         Map<String, Object> result = new HashMap<>();
         ResultSetMetaData metaData = rs.getMetaData();
         for (int i = 1; i <= metaData.getColumnCount(); i++) {
-            String columnName = metaData.getColumnName(i);
+            String columnName = metaData.getColumnName(i).toUpperCase();
             result.put(columnName, rs.getObject(columnName));
         }
         return mapper.map(result, rowNum);
